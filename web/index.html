@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#070E1D" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>DAMA ROYALE 3D</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-auth-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.12.2/firebase-database-compat.min.js"></script>
+  <style>
+    :root {
+      --bg0: #050914;
+      --bg1: #0A1428;
+      --bg2: #122347;
+      --gold1: #FFF0A8;
+      --gold2: #E2B428;
+      --gold3: #8D6412;
+      --txt: #F3F6FC;
+      --mut: #9FB2D4;
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: #040710;
+      color: var(--txt);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    #app {
+      width: 100%;
+      max-width: 440px;
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      padding-top: env(safe-area-inset-top);
+      background: radial-gradient(circle at 50% 0%, #1F3975 0%, #0A1428 52%, #050914 100%);
+      box-shadow: 0 0 60px rgba(0, 0, 0, 0.85);
+    }
+    #app::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(255, 215, 0, 0.09), transparent 45%),
+        repeating-linear-gradient(120deg, transparent 0 64px, rgba(255, 215, 0, 0.035) 64px 65px);
+      pointer-events: none;
+    }
+    #main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px 14px;
+      position: relative;
+      z-index: 1;
+    }
+    #nav {
+      display: flex;
+      border-top: 1px solid rgba(226, 180, 40, 0.45);
+      background: linear-gradient(180deg, #0D1B38, #070E1D);
+      position: relative;
+      z-index: 2;
+    }
+    #nav button {
+      flex: 1;
+      background: none;
+      border: 0;
+      color: #8FA3C7;
+      padding: 8px 2px 7px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      position: relative;
+    }
+    #nav button.on { color: var(--gold1); }
+    #nav button.on::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 24%;
+      right: 24%;
+      height: 3px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--gold3), var(--gold1), var(--gold3));
+    }
+    #ban {
+      background: linear-gradient(90deg, #091327, #13254B, #091327);
+      border-top: 1px solid rgba(255, 215, 0, 0.25);
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gold1);
+      padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+    }
+    .royal-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: linear-gradient(180deg, #FFF5BD 0%, #E7B92E 52%, #9A6D12 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gold-txt { color: var(--gold1); }
+    .mut { color: var(--mut); font-size: 11px; }
+    .frame {
+      border: 1px solid rgba(226, 180, 40, 0.52);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(22, 41, 82, 0.92), rgba(10, 20, 42, 0.96));
+      box-shadow:
+        inset 0 0 0 2px rgba(5, 9, 20, 0.7),
+        inset 0 0 0 3px rgba(255, 215, 0, 0.16),
+        0 8px 20px rgba(0, 0, 0, 0.45);
+      padding: 12px;
+      margin: 8px 0;
+    }
+    .card {
+      border: 1px solid rgba(226, 180, 40, 0.36);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(20, 38, 77, 0.9), rgba(10, 19, 39, 0.94));
+      padding: 10px;
+      margin: 6px 0;
+      font-size: 13px;
+    }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 11px;
+      border: 1px solid rgba(255, 224, 115, 0.72);
+      background: linear-gradient(180deg, #1A2F5C 0%, #0C1834 100%);
+      color: var(--gold1);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      margin: 6px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.42; cursor: not-allowed; }
+    .btn-gold {
+      background: linear-gradient(180deg, #FFF1A8 0%, #E3B324 55%, #B48214 100%);
+      color: #091224;
+      border: 1px solid #FFF7CC;
+      box-shadow: 0 0 18px rgba(226, 180, 40, 0.35), 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .row > * { flex: 1; }
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      margin: 5px 0;
+      border-radius: 10px;
+      border: 1px solid rgba(226, 180, 40, 0.45);
+      background: rgba(7, 14, 29, 0.92);
+      color: var(--txt);
+      font-size: 13px;
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--gold1);
+      box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.16);
+    }
+    .top-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 0 8px;
+      border-bottom: 1px solid rgba(226, 180, 40, 0.25);
+    }
+    .brand-lockup { display: flex; align-items: center; gap: 8px; }
+    .brand-lockup .t1 { font-size: 18px; line-height: 1.05; }
+    .brand-lockup .t2 { font-size: 10px; letter-spacing: 1.5px; color: var(--gold2); font-weight: 800; }
+    .back-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      border: 1px solid rgba(226, 180, 40, 0.35);
+      background: rgba(13, 25, 52, 0.85);
+      color: var(--gold1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .pill-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0 6px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(8, 16, 34, 0.9);
+      border: 1px solid rgba(226, 180, 40, 0.42);
+      border-radius: 20px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .avatar-ring {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      border: 2px solid var(--gold2);
+      box-shadow: 0 0 14px rgba(226, 180, 40, 0.28);
+      background: radial-gradient(circle at 35% 30%, #24407A, #0A1326);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 18px;
+      color: var(--gold1);
+      flex: 0 0 54px;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero-box { text-align: center; padding: 16px 12px; }
+    .hero-box h2 { font-size: 24px; font-weight: 900; color: var(--gold1); letter-spacing: 0.4px; }
+    .hero-box p { font-size: 12px; color: #D6E2F8; margin: 5px 0 12px; line-height: 1.45; }
+    .tile { text-align: center; padding: 13px 8px; cursor: pointer; }
+    .tile b { display: block; color: var(--gold1); font-size: 13px; margin-top: 6px; letter-spacing: 0.4px; }
+    .tile small { display: block; color: var(--mut); font-size: 10px; margin-top: 2px; }
+    .ribbon {
+      background: linear-gradient(90deg, #7C5810 0%, #F5CE57 50%, #7C5810 100%);
+      color: #1A1102;
+      font-weight: 900;
+      font-size: 13px;
+      text-align: center;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin: 8px 0;
+      border: 1px solid #FFF0A8;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .sec-hd {
+      margin: 12px 2px 6px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: var(--gold1);
+      border-bottom: 1px solid rgba(226, 180, 40, 0.28);
+      padding-bottom: 4px;
+    }
+    .store-item {
+      border: 1px solid rgba(226, 180, 40, 0.38);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(22, 40, 78, 0.92), rgba(9, 18, 37, 0.96));
+      padding: 9px 6px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .store-item .nm { font-size: 11px; font-weight: 700; min-height: 28px; display: flex; align-items: center; line-height: 1.2; }
+    .store-item .pr { font-size: 12px; font-weight: 800; color: var(--gold1); }
+    .buy-sm {
+      width: 92%;
+      border: 0;
+      border-radius: 8px;
+      padding: 7px 4px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      background: linear-gradient(180deg, #FFF0A8, #D9A61E);
+      color: #091224;
+    }
+    .buy-sm.own {
+      background: #173628;
+      color: #86EFAC;
+      border: 1px solid rgba(134, 239, 172, 0.35);
+    }
+    .pack-card { position: relative; border-width: 1.5px; }
+    .pack-bronze { background: linear-gradient(180deg, #6E4726, #382110); }
+    .pack-silver { background: linear-gradient(180deg, #CBD5E1, #64748B); color: #0F172A; }
+    .pack-silver .pr, .pack-silver .mut { color: #0F172A; }
+    .pack-gold { background: linear-gradient(180deg, #F3CA52, #8F6412); color: #161004; }
+    .pack-gold .pr, .pack-gold .mut { color: #161004; }
+    .pack-pop { box-shadow: 0 0 16px rgba(255, 215, 0, 0.42); }
+    .pack-pop::before {
+      content: "★ MOST POPULAR";
+      position: absolute;
+      top: -9px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #FFF1A8, #E3B324);
+      color: #091224;
+      font-size: 8px;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+    .live-badge {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.6px;
+      padding: 3px 9px;
+      border-radius: 12px;
+      background: #B91C1C;
+      color: #FFF;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+    .cams-grid {
+      display: grid;
+      grid-template-columns: 1fr 112px 1fr;
+      gap: 6px;
+      align-items: start;
+      margin: 4px 0 8px;
+    }
+    .cam-col { text-align: center; }
+    .cam-circle {
+      width: 94px;
+      height: 94px;
+      margin: 0 auto;
+      border-radius: 50%;
+      border: 2.5px solid var(--gold2);
+      box-shadow: 0 0 16px rgba(75, 140, 255, 0.35), inset 0 0 12px rgba(0, 0, 0, 0.7);
+      background: radial-gradient(circle at 35% 30%, #243E75, #091122);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .cam-circle video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .cam-circle video.on { display: block; }
+    .mic-btn {
+      width: 34px;
+      height: 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(226, 180, 40, 0.65);
+      background: #0D1A36;
+      color: var(--gold1);
+      font-size: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      margin: -10px auto 3px;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cam-name { font-size: 11px; font-weight: 800; line-height: 1.25; }
+    .cam-name small { display: block; font-size: 10px; font-weight: 700; color: #4ADE80; }
+    .turn-pill {
+      margin-top: 30px;
+      border: 1px solid rgba(226, 180, 40, 0.6);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #13254B, #091224);
+      color: var(--gold1);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 7px 6px;
+      text-align: center;
+      line-height: 1.35;
+    }
+    .board-wrap { perspective: 820px; padding: 4px 6px 10px; }
+    #bd {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      aspect-ratio: 1;
+      width: 92%;
+      margin: 0 auto;
+      border: 8px solid #5A3818;
+      border-radius: 6px;
+      transform: rotateX(18deg);
+      box-shadow: 0 20px 28px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(226, 180, 40, 0.45);
+      overflow: hidden;
+    }
+    #bd.flipped { transform: rotateX(18deg) rotate(180deg); }
+    #bd.flipped .piece-disc { transform: rotate(180deg); }
+    .sq { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; }
+    .sq.light { background: linear-gradient(145deg, #EAD5A3, #C9A968); }
+    .sq.dark { background: linear-gradient(145deg, #1E356E, #0D1A3B); }
+    #bd.skin-gold .sq.light { background: linear-gradient(145deg, #FFF0A6, #D8A928); }
+    #bd.skin-gold .sq.dark { background: linear-gradient(145deg, #352506, #171002); }
+    #bd.skin-royale .sq.light { background: linear-gradient(145deg, #F7E5B2, #C79B2B); }
+    #bd.skin-royale .sq.dark { background: linear-gradient(145deg, #182C5C, #091229); }
+    .sq.last { box-shadow: inset 0 0 0 2.5px rgba(255, 224, 102, 0.85); }
+    .sq.target { background: radial-gradient(circle, rgba(52, 211, 153, 0.55), rgba(16, 185, 129, 0.25)) !important; }
+    .sq.sel { box-shadow: inset 0 0 0 2.5px #38BDF8; }
+    .piece-disc {
+      width: 78%;
+      height: 78%;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.65), inset 0 2px 2px rgba(255, 255, 255, 0.5), inset 0 -3px 4px rgba(0, 0, 0, 0.55);
+      border: 1.5px solid rgba(255, 255, 255, 0.22);
+    }
+    .piece-blue { background: radial-gradient(circle at 35% 30%, #60A5FA 0%, #2563EB 58%, #122963 100%); }
+    .piece-gold { background: radial-gradient(circle at 35% 30%, #FFF3B0 0%, #E5B526 58%, #7E560B 100%); }
+    .status-banner {
+      margin: 4px 16px 8px;
+      padding: 9px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(226, 180, 40, 0.45);
+      background: linear-gradient(180deg, #12244A, #091224);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .wager-row { display: flex; gap: 8px; justify-content: center; margin: 6px 0; }
+    .wager-chip {
+      border: 1px solid rgba(226, 180, 40, 0.45);
+      background: rgba(9, 17, 36, 0.9);
+      border-radius: 18px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .chat-box { border: 1px solid rgba(226, 180, 40, 0.4); border-radius: 12px; background: rgba(8, 16, 34, 0.9); padding: 9px; margin-top: 8px; }
+    .chat-msgs { max-height: 76px; overflow-y: auto; font-size: 12px; margin: 6px 0; display: flex; flex-direction: column; gap: 4px; }
+    .toast {
+      position: fixed;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #FFF1A8, #E3B324);
+      color: #091224;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 12px;
+      z-index: 60;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+      max-width: 90%;
+      text-align: center;
+    }
+    #mod {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .mod-card {
+      width: 100%;
+      max-width: 370px;
+      max-height: 88vh;
+      overflow-y: auto;
+      border: 1.5px solid var(--gold2);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #13254B, #081124);
+      padding: 16px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+    }
+    .av-choice {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(226, 180, 40, 0.3);
+      background: #0A152C;
+      color: var(--gold1);
+      font-weight: 900;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .av-choice.on {
+      border-color: var(--gold1);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.45);
+      background: #183061;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="main"></div>
+    <div id="nav"></div>
+    <div id="ban" onclick="go('store')">Upgrade to DAMA ROYALE Pro · No Ads &amp; Exclusive Skins</div>
+  </div>
+  <div id="mod"></div>
+
+  <svg width="0" height="0" style="position:absolute;visibility:hidden" aria-hidden="true">
+    <defs>
+      <linearGradient id="gCrown" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#FFF4B8" />
+        <stop offset="50%" stop-color="#E2B225" />
+        <stop offset="100%" stop-color="#8B5E0D" />
+      </linearGradient>
+      <linearGradient id="gCoin" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FFF2A6" />
+        <stop offset="55%" stop-color="#DFAC1E" />
+        <stop offset="100%" stop-color="#86590A" />
+      </linearGradient>
+      <symbol id="ico-crown" viewBox="0 0 64 44">
+        <path d="M6 36 L10 12 L22 24 L32 7 L42 24 L54 12 L58 36 Z" fill="url(#gCrown)" stroke="#FFEAA0" stroke-width="1.5" stroke-linejoin="round" />
+        <rect x="7" y="36" width="50" height="5" rx="2.5" fill="url(#gCrown)" />
+        <circle cx="32" cy="24" r="3" fill="#2563EB" />
+        <circle cx="18" cy="28" r="2.2" fill="#DC2626" />
+        <circle cx="46" cy="28" r="2.2" fill="#DC2626" />
+      </symbol>
+      <symbol id="ico-coin" viewBox="0 0 32 32">
+        <circle cx="16" cy="16" r="13" fill="url(#gCoin)" stroke="#FFF3B0" stroke-width="1.5" />
+        <circle cx="16" cy="16" r="9.5" fill="none" stroke="#7A5108" stroke-width="1.2" />
+        <text x="16" y="20" text-anchor="middle" font-size="12" font-weight="900" fill="#4A2E03">D</text>
+      </symbol>
+      <symbol id="ico-king-pip" viewBox="0 0 32 24">
+        <path d="M5 19 L8 6 L13 13 L16 4 L19 13 L24 6 L27 19 Z" fill="#FFF2A6" stroke="#5C3C05" stroke-width="1.2" stroke-linejoin="round" />
+        <rect x="6" y="19" width="20" height="3" rx="1.5" fill="#FFF2A6" />
+      </symbol>
+    </defs>
+  </svg>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAiBUJgMU6gOUR9Ek4G4pqp6crBpR5JJjE",
+      authDomain: "dama-royale-3d-f8b49.firebaseapp.com",
+      databaseURL: "https://dama-royale-3d-f8b49-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dama-royale-3d-f8b49",
+      storageBucket: "dama-royale-3d-f8b49.firebasestorage.app",
+      messagingSenderId: "579746188635",
+      appId: "1:579746188635:web:d3957a2ce8387fd5135e7e"
+    };
+
+    let ON = false, FDB = null, UID = "";
+    const $ = (s) => document.querySelector(s);
+    const fmt = (n) => Number(n || 0).toLocaleString();
+    const rnd = (n) => Math.random() * n | 0;
+    const esc = (t) => String(t == null ? "" : t).replace(/[<>&"]/g, "");
+    const today = () => new Date().toISOString().slice(0, 10);
+    const svgUse = (id, w, h, extra = "") => `<svg width="${w}" height="${h}" ${extra}><use href="#${id}" /></svg>`;
+
+    const COUNTRIES = ["PH", "US", "BR", "ID", "IN", "JP", "KR", "MX", "VN", "TH", "UK", "CA", "DE", "FR", "AU"];
+    const AVATARS = ["K1", "K2", "DR", "FX", "PH", "V1"];
+    const INIT_BOARD = (() => {
+      const b = Array(64).fill(0);
+      for (let i = 0; i < 64; i++) {
+        const r = i >> 3, c = i % 8;
+        if ((r + c) % 2) {
+          if (r < 3) b[i] = 2;
+          else if (r > 4) b[i] = 1;
+        }
+      }
+      return b.join("");
+    })();
+
+    let S = Object.assign({
+      name: "", cc: "PH", av: "K1", coins: 1000, prac: 1000,
+      own: { wood: 1 }, eq: {}, wins: 0, aiw: 0, points: 0, elo: 1200, games: 0,
+      dly: "", ad: { d: "", t: 0, n: 0 }, cm: { d: "", n: 0 }, mem: null, bgm: true
+    }, JSON.parse(localStorage.getItem("dama_spark_v1") || "{}"));
+
+    const sv = () => {
+      try { localStorage.setItem("dama_spark_v1", JSON.stringify(S)); } catch (_) {}
+      if (ON && typeof NETSV === "function") NETSV();
+    };
+
+    function toast(msg) {
+      const el = document.createElement("div");
+      el.className = "toast";
+      el.textContent = msg;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 2300);
+    }
+    const modal = (html) => {
+      $("#mod").innerHTML = `<div class="mod-card">${html}</div>`;
+      $("#mod").style.display = "flex";
+    };
+    const closeM = () => { $("#mod").style.display = "none"; };
+
+    const lvl = () => Math.floor((S.wins + S.aiw) / 5) + 1;
+    const rank = () => Math.max(1, 245 - S.wins * 3);
+    const isPro = () => !!(S.mem && (!S.mem.until || S.mem.until > Date.now()));
+
+    // ===== META AUDIENCE NETWORK BRIDGE (BANNER, INTERSTITIAL, REWARDED) =====
+    const META_ADS = {
+      enabled: true,
+      testMode: true,
+      testDeviceId: "YOUR_TEST_DEVICE_HASH_ID",
+      placements: {
+        banner: "YOUR_BANNER_PLACEMENT_ID",
+        interstitial: "YOUR_INTERSTITIAL_PLACEMENT_ID",
+        rewarded: "YOUR_REWARDED_PLACEMENT_ID"
+      },
+      _pendingRewardCb: null,
+
+      hasNative() {
+        return !!(window.MetaAdsBridge && typeof window.MetaAdsBridge.showRewarded === "function");
+      },
+
+      initTestConfig() {
+        if (this.hasNative() && typeof window.MetaAdsBridge.configureTestMode === "function") {
+          window.MetaAdsBridge.configureTestMode(this.testMode, this.testDeviceId);
+        }
+      },
+
+      syncBanner(isPlaying) {
+        const ban = $("#ban");
+        if (!ban) return;
+        if (isPlaying || isPro() || !this.enabled) {
+          ban.style.display = "none";
+          if (this.hasNative() && typeof window.MetaAdsBridge.hideBanner === "function") {
+            window.MetaAdsBridge.hideBanner();
+          }
+          return;
+        }
+        ban.style.display = "block";
+        if (this.hasNative() && typeof window.MetaAdsBridge.showBanner === "function") {
+          window.MetaAdsBridge.showBanner(this.placements.banner);
+        }
+      },
+
+      showAfterGameInterstitial() {
+        if (isPro() || !this.enabled) return;
+        if (this.hasNative() && typeof window.MetaAdsBridge.showInterstitial === "function") {
+          window.MetaAdsBridge.showInterstitial(this.placements.interstitial);
+        }
+      },
+
+      requestRewarded(onEarned) {
+        if (!this.enabled) return onEarned();
+        if (this.hasNative()) {
+          this._pendingRewardCb = onEarned;
+          window.MetaAdsBridge.showRewarded(this.placements.rewarded);
+          return;
+        }
+        modal(`
+          <div style="text-align:center">
+            <div style="margin-bottom:6px">${svgUse("ico-coin", 44, 44)}</div>
+            <h3 class="royal-title" style="font-size:18px">META TEST REWARDED AD</h3>
+            <p class="mut" style="margin:8px 0 12px">Test Mode: ${this.testMode ? "ON" : "OFF"} · Watch ad to earn +50 Coins</p>
+            <button class="btn btn-gold" id="claimAdBtn">COMPLETE TEST AD · +50 COINS</button>
+            <button class="btn" onclick="closeM()">CANCEL</button>
+          </div>
+        `);
+        $("#claimAdBtn").onclick = () => {
+          closeM();
+          onEarned();
+        };
+      }
+    };
+
+    window.onMetaRewardEarned = () => {
+      const cb = META_ADS._pendingRewardCb;
+      META_ADS._pendingRewardCb = null;
+      if (typeof cb === "function") cb();
+    };
+
+    // ===== ROYAL AUDIO (MENU + GAMEPLAY MUSIC) =====
+    const ROYAL_AUDIO = {
+      audioUrl: "",
+      enabled: true,
+      mode: "menu",
+      _el: null,
+      _ctx: null,
+      _timer: null,
+      _step: 0,
+      _unlocked: false,
+
+      init() {
+        this.enabled = S.bgm !== false;
+        const unlock = () => {
+          if (this._unlocked) return;
+          this._unlocked = true;
+          if (this.enabled) this.play(this.mode);
+        };
+        ["pointerdown", "keydown", "touchstart"].forEach((ev) => {
+          document.addEventListener(ev, unlock, { once: true, passive: true });
+        });
+      },
+
+      setEnabled(on) {
+        this.enabled = !!on;
+        S.bgm = this.enabled;
+        sv();
+        if (this.enabled) this.play(this.mode);
+        else this.stop();
+      },
+
+      play(mode) {
+        if (mode) this.mode = mode;
+        if (!this.enabled) return this.stop();
+        if (this.audioUrl) {
+          if (!this._el) {
+            this._el = new Audio(this.audioUrl);
+            this._el.loop = true;
+          }
+          this._el.volume = this.mode === "game" ? 0.52 : 0.38;
+          this._el.playbackRate = this.mode === "game" ? 1.04 : 1.0;
+          this._el.play().catch(() => {});
+          return;
+        }
+        this._startSynthLoop();
+      },
+
+      stop() {
+        if (this._el) {
+          try { this._el.pause(); } catch (_) {}
+        }
+        if (this._timer) {
+          clearInterval(this._timer);
+          this._timer = null;
+        }
+      },
+
+      _ensureCtx() {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        if (!this._ctx) this._ctx = new Ctx();
+        if (this._ctx.state === "suspended") this._ctx.resume().catch(() => {});
+        return this._ctx;
+      },
+
+      _hitBass(ctx, now, freq, dur, gainPeak) {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(freq * 1.45, now);
+        osc.frequency.exponentialRampToValueAtTime(freq, now + 0.045);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(36, freq * 0.65), now + dur);
+        g.gain.setValueAtTime(0.001, now);
+        g.gain.linearRampToValueAtTime(gainPeak, now + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + dur + 0.02);
+      },
+
+      _hitCowbell(ctx, now, baseFreq, gainPeak) {
+        [baseFreq, baseFreq * 1.48].forEach((f, idx) => {
+          const osc = ctx.createOscillator();
+          const filter = ctx.createBiquadFilter();
+          const g = ctx.createGain();
+          osc.type = idx === 0 ? "square" : "triangle";
+          osc.frequency.setValueAtTime(f, now);
+          filter.type = "bandpass";
+          filter.frequency.setValueAtTime(f * 1.25, now);
+          filter.Q.setValueAtTime(4.5, now);
+          g.gain.setValueAtTime(0.001, now);
+          g.gain.linearRampToValueAtTime(gainPeak, now + 0.004);
+          g.gain.exponentialRampToValueAtTime(0.0008, now + 0.11);
+          osc.connect(filter);
+          filter.connect(g);
+          g.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.13);
+        });
+      },
+
+      _hitHat(ctx, now, openHat, gainPeak) {
+        const len = Math.floor(ctx.sampleRate * (openHat ? 0.09 : 0.03));
+        const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < len; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        const hp = ctx.createBiquadFilter();
+        hp.type = "highpass";
+        hp.frequency.setValueAtTime(6800, now);
+        const g = ctx.createGain();
+        g.gain.setValueAtTime(gainPeak, now);
+        g.gain.exponentialRampToValueAtTime(0.0008, now + (openHat ? 0.085 : 0.028));
+        src.connect(hp);
+        hp.connect(g);
+        g.connect(ctx.destination);
+        src.start(now);
+      },
+
+      _startSynthLoop() {
+        if (!this._unlocked || !this.enabled) return;
+        const ctx = this._ensureCtx();
+        if (!ctx) return;
+        if (this._timer) clearInterval(this._timer);
+        const bassNotes = [65.41, 0, 65.41, 77.78, 0, 65.41, 87.31, 73.42, 65.41, 0, 65.41, 98.0, 87.31, 0, 77.78, 73.42];
+        const bellNotes = [587.33, 0, 783.99, 587.33, 880.0, 0, 783.99, 659.25, 587.33, 0, 783.99, 987.77, 880.0, 783.99, 659.25, 0];
+        const stepMs = this.mode === "game" ? 117 : 125;
+        const volScale = this.mode === "game" ? 1.15 : 0.85;
+        this._timer = setInterval(() => {
+          if (!this.enabled) return this.stop();
+          const c = this._ensureCtx();
+          if (!c) return;
+          const now = c.currentTime + 0.01;
+          const s = this._step % 16;
+          if (bassNotes[s]) this._hitBass(c, now, bassNotes[s], 0.22, 0.085 * volScale);
+          if (bellNotes[s]) this._hitCowbell(c, now, bellNotes[s], 0.045 * volScale);
+          if (s % 2 === 0 || this.mode === "game") {
+            this._hitHat(c, now, s % 4 === 2, 0.022 * volScale);
+          }
+          this._step++;
+        }, stepMs);
+      }
+    };
+
+    // ===== DAMA ENGINE =====
+    const D = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+    const ow = (v) => (v ? (v % 2 ? 1 : 2) : 0);
+    const kg = (v) => v > 2;
+    const In = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
+
+    function caps(b, s, p, out) {
+      const k = kg(b[s]);
+      const bb = b.slice();
+      bb[s] = 0;
+      (function j(pos, cap, path) {
+        let f = 0;
+        for (const [dr, dc] of D) {
+          let r = (pos / 8 | 0) + dr, c = (pos % 8) + dc;
+          if (k) while (In(r, c) && !bb[r * 8 + c]) { r += dr; c += dc; }
+          if (!In(r, c)) continue;
+          const q = r * 8 + c;
+          if (ow(bb[q]) !== 3 - p || cap.includes(q)) continue;
+          r += dr; c += dc;
+          while (In(r, c) && !bb[r * 8 + c]) {
+            f = 1;
+            const l = r * 8 + c;
+            j(l, [...cap, q], [...path, l]);
+            if (!k) break;
+            r += dr; c += dc;
+          }
+        }
+        if (!f && cap.length) out.push({ p: path, c: cap });
+      })(s, [], [s]);
+    }
+
+    function moves(b, p) {
+      const o = [];
+      for (let i = 0; i < 64; i++) if (ow(b[i]) === p) caps(b, i, p, o);
+      if (o.length) return o;
+      for (let i = 0; i < 64; i++) {
+        if (ow(b[i]) === p) {
+          const k = kg(b[i]);
+          for (const [dr, dc] of D) {
+            if (!k && dr !== (p === 1 ? -1 : 1)) continue;
+            let r = (i / 8 | 0) + dr, c = (i % 8) + dc;
+            while (In(r, c) && !b[r * 8 + c]) {
+              o.push({ p: [i, r * 8 + c], c: [] });
+              if (!k) break;
+              r += dr; c += dc;
+            }
+          }
+        }
+      }
+      return o;
+    }
+
+    function ap(b, m) {
+      const n = b.slice();
+      const s = m.p[0], e = m.p[m.p.length - 1];
+      let v = n[s];
+      n[s] = 0;
+      m.c.forEach((i) => { n[i] = 0; });
+      if (v < 3 && ((v === 1 && e < 8) || (v === 2 && e > 55))) v += 2;
+      n[e] = v;
+      return n;
+    }
+
+    const ev = (b, p) => b.reduce((sum, v) => (v ? sum + (ow(v) === p ? 1 : -1) * (v > 2 ? 3 : 1) : sum), 0);
+
+    function mm(b, t, p, d, a, be) {
+      const ms = moves(b, t);
+      if (!ms.length) return t === p ? -99 : 99;
+      if (!d) return ev(b, p);
+      let best = t === p ? -1e3 : 1e3;
+      for (const m of ms) {
+        const val = mm(ap(b, m), 3 - t, p, d - 1, a, be);
+        if (t === p) { best = Math.max(best, val); a = Math.max(a, val); }
+        else { best = Math.min(best, val); be = Math.min(be, val); }
+        if (be <= a) break;
+      }
+      return best;
+    }
+
+    function ai(b, p, lv) {
+      let ms = moves(b, p);
+      if (!ms.length) return null;
+      if (lv === 0) return ms[rnd(ms.length)];
+      if (lv === 1) {
+        const mx = Math.max(...ms.map((m) => m.c.length));
+        ms = ms.filter((m) => m.c.length === mx);
+        return ms[rnd(ms.length)];
+      }
+      const d = lv === 2 ? 1 : 3;
+      let bs = -1e4, bm = [];
+      for (const m of ms) {
+        const val = mm(ap(b, m), 3 - p, p, d, -1e4, 1e4);
+        if (val > bs) { bs = val; bm = [m]; }
+        else if (val === bs) bm.push(m);
+      }
+      return bm[rnd(bm.length)];
+    }
+
+    function init() { return INIT_BOARD.split("").map(Number); }
+
+    function rb(el, g) {
+      if (!el || !g || !g.b) return;
+      const me = g.me || 1;
+      const tg = g.sel != null ? g.mv.filter((m) => m.p[0] === g.sel).map((m) => m.p[m.p.length - 1]) : [];
+      const skinCls = S.eq.board ? "skin-" + S.eq.board : "";
+      el.className = [skinCls, me === 2 ? "flipped" : ""].filter(Boolean).join(" ");
+      let html = "";
+      for (let i = 0; i < 64; i++) {
+        const v = g.b[i];
+        const dark = ((i / 8 | 0) + i % 8) % 2 === 1;
+        const cls = [
+          "sq",
+          dark ? "dark" : "light",
+          g.last && g.last.includes(i) ? "last" : "",
+          tg.includes(i) ? "target" : "",
+          g.sel === i ? "sel" : ""
+        ].filter(Boolean).join(" ");
+        const disc = v
+          ? `<span class="piece-disc ${ow(v) === me ? "piece-blue" : "piece-gold"}">${kg(v) ? svgUse("ico-king-pip", 20, 15) : ""}</span>`
+          : "";
+        html += `<div class="${cls}" onclick="tap(${i})">${disc}</div>`;
+      }
+      el.innerHTML = html;
+    }
+
+    // ===== NAVIGATION =====
+    let G = null, GM = null, cur = "";
+    const V = {};
+
+    function go(n, a) {
+      NET.leave();
+      G = null;
+      cur = n;
+      closeM();
+      $("#nav").style.display = (n === "splash" || n === "game") ? "none" : "flex";
+      META_ADS.syncBanner(n === "game");
+      ROYAL_AUDIO.play(n === "game" ? "game" : "menu");
+      $("#main").innerHTML = V[n](a);
+      $("#main").scrollTop = 0;
+      if (typeof V[n + "_"] === "function") V[n + "_"](a);
+      document.querySelectorAll("#nav button").forEach((b) => b.classList.toggle("on", b.dataset.n === n));
+    }
+
+    $("#nav").innerHTML = [
+      ["home", "Home"],
+      ["store", "Store"],
+      ["mkt", "Market"],
+      ["lb", "Ranks"],
+      ["prof", "Profile"]
+    ].map(([k, lbl]) => `<button data-n="${k}" onclick="go('${k}')">${lbl}</button>`).join("");
+
+    const hdr = (title, backTo = "home") => `
+      <div class="top-hdr">
+        <div class="back-btn" onclick="go('${backTo}')">‹</div>
+        <div class="brand-lockup">${svgUse("ico-crown", 24, 17)}<span class="royal-title" style="font-size:17px">${title}</span></div>
+        <div style="width:34px"></div>
+      </div>
+    `;
+
+    // ===== OPENING / LOGIN =====
+    V.splash = () => `
+      <div style="text-align:center;padding:8px 6px 4px">
+        <div style="margin:2px auto 0">${svgUse("ico-crown", 86, 58)}</div>
+        <h1 class="royal-title" style="font-size:28px;margin-top:2px">DAMA ROYALE 3D</h1>
+        <div style="font-family:Georgia,serif;font-size:13px;color:#E6EDF8;margin:4px 0 12px;letter-spacing:0.4px">Play Like A King Win Like A Royal</div>
+
+        <div class="frame" style="padding:12px;margin:6px 0 12px;text-align:left">
+          <label class="mut" style="font-weight:700;color:var(--gold1)">PLAYER HANDLE</label>
+          <input id="un" placeholder="Enter your username" maxlength="14" value="${esc(S.name)}" />
+          <label class="mut" style="font-weight:700;color:var(--gold1);margin-top:6px;display:block">REGION</label>
+          <select id="cc">
+            ${COUNTRIES.map((c) => `<option value="${c}" ${c === S.cc ? "selected" : ""}>${c}</option>`).join("")}
+            <option value="auto">Auto-Detect Region</option>
+          </select>
+          <label class="mut" style="font-weight:700;color:var(--gold1);margin-top:6px;display:block">ROYAL EMBLEM</label>
+          <div class="row" style="margin-top:6px;justify-content:space-between">
+            ${AVATARS.map((a) => `<button type="button" class="av-choice ${a === S.av ? "on" : ""}" onclick="S.av='${a}';document.querySelectorAll('.av-choice').forEach(e=>e.classList.toggle('on',e.textContent=='${a}'))">${a}</button>`).join("")}
+          </div>
+        </div>
+
+        <button class="btn btn-gold" style="font-size:15px;padding:13px" onclick="enter(false)">PLAY</button>
+        <button class="btn" style="font-size:14px;padding:12px" onclick="enter(true)">LOGIN</button>
+      </div>
+    `;
+
+    function enter(quick) {
+      let cc = $("#cc").value;
+      if (cc === "auto") {
+        cc = (navigator.language.split("-")[1] || "PH").toUpperCase();
+        if (!COUNTRIES.includes(cc)) cc = "PH";
+      }
+      const raw = $("#un").value.trim();
+      S.cc = cc;
+      S.name = quick ? (raw || "RoyalPlayer" + (100 + rnd(900))) : (esc(raw).slice(0, 14) || "Player" + (100 + rnd(900)));
+      sv();
+      go("home");
+      NET.login();
+    }
+
+    // ===== HOME =====
+    V.home = () => {
+      const claimed = S.dly === today();
+      return `
+        <div class="top-hdr">
+          <div class="brand-lockup">
+            ${svgUse("ico-crown", 32, 22)}
+            <div>
+              <div class="royal-title t1">DAMA ROYALE</div>
+              <div class="t2">3D WORLDWIDE</div>
+            </div>
+          </div>
+          <div class="row" style="gap:4px;flex:0 0 auto">
+            ${["PH", "US", "BR", "ID", "JP", "KR"].map((c) => `<span class="pill" style="padding:3px 7px;font-size:10px">${c}</span>`).join("")}
+          </div>
+        </div>
+
+        <div class="pill-bar">
+          <span class="pill">${svgUse("ico-coin", 16, 16)} <span class="gold-txt">${fmt(S.coins)}</span></span>
+          <span class="pill" title="Practice Coins">${svgUse("ico-coin", 16, 16, "style='opacity:0.65'")} <span>${fmt(S.prac)}</span></span>
+          <span class="back-btn" id="bgmBtn" onclick="ROYAL_AUDIO.setEnabled(!ROYAL_AUDIO.enabled);this.textContent=ROYAL_AUDIO.enabled?'♪':'×'" title="Toggle Music">${ROYAL_AUDIO.enabled ? "♪" : "×"}</span>
+          <span class="back-btn" onclick="go('prof')" title="Profile">⚙</span>
+        </div>
+
+        <div class="g2">
+          <div class="frame row" style="padding:10px;gap:9px;margin:0;cursor:pointer" onclick="go('prof')">
+            <div class="avatar-ring">${esc(S.av)}</div>
+            <div style="flex:2;min-width:0">
+              <div style="font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(S.name)}</div>
+              <div class="mut">Lv.${lvl()} · Rank #${rank()}</div>
+            </div>
+          </div>
+          <div class="frame" style="padding:10px;margin:0;text-align:center">
+            <div class="gold-txt" style="font-size:12px;font-weight:900">DAILY BONUS</div>
+            <div class="mut" style="margin:3px 0 6px">${claimed ? "Claimed today" : "+20 Coins"}</div>
+            <button class="btn btn-gold" style="padding:7px;margin:0;font-size:11px" ${claimed ? "disabled" : ""} onclick="daily()">${claimed ? "CLAIMED" : "CLAIM"}</button>
+          </div>
+        </div>
+
+        <div class="frame hero-box">
+          <h2>Play 1v1 WORLDWIDE</h2>
+          <p>Real-time online matches &amp; AI training<br><span class="gold-txt" style="font-weight:700">Entry 20 Coins · Winner +40 Coins</span></p>
+          <button class="btn btn-gold" style="font-size:15px;padding:13px" onclick="play1v1()">PLAY 1V1 WORLDWIDE</button>
+          <button class="btn" onclick="aiPick()">PLAY WITH AI · FREE PRACTICE</button>
+        </div>
+
+        <div class="g2">
+          <div class="frame tile" style="margin:0" onclick="go('earn')">
+            ${svgUse("ico-coin", 34, 34)}
+            <b>EARN COINS</b>
+            <small>Wins · Ads · Daily · Chat</small>
+          </div>
+          <div class="frame tile" style="margin:0" onclick="go('lb')">
+            ${svgUse("ico-crown", 42, 30)}
+            <b>LEADERBOARD</b>
+            <small>Top 10 Champions</small>
+          </div>
+        </div>
+
+        <div id="onl" class="mut" style="text-align:center;margin-top:8px"></div>
+      `;
+    };
+
+    V.home_ = async () => {
+      const el = $("#onl");
+      if (!el) return;
+      if (!ON || !FDB) {
+        el.textContent = "Ready to play · AI Practice & Local Wallet Active";
+        return;
+      }
+      try {
+        const snap = await FDB.ref("users").orderByChild("online").equalTo(true).once("value");
+        const count = Object.keys(snap.val() || {}).length;
+        if (cur === "home") el.innerHTML = `<span class="gold-txt" style="font-weight:800">${fmt(count)}</span> Players Online Now`;
+      } catch (_) {}
+    };
+
+    function addCoins(delta) {
+      S.coins = Math.max(0, (S.coins || 0) + delta);
+      sv();
+      if (ON && FDB && UID) {
+        FDB.ref(`users/${UID}/coins`).transaction((v) => Math.max(0, (v || 0) + delta)).catch(() => {});
+      }
+    }
+
+    function daily() {
+      if (S.dly === today()) return toast("Come back tomorrow");
+      S.dly = today();
+      addCoins(20);
+      toast("Daily Bonus +20 Coins");
+      if (cur === "home" || cur === "earn") go(cur);
+    }
+
+    function reward() {
+      const now = Date.now();
+      const ad = S.ad && S.ad.d === today() ? S.ad : { d: today(), t: 0, n: 0 };
+      if (now - ad.t < 30000) return toast("Cooldown 30s");
+      if (ad.n >= 20) return toast("Daily ad reward limit reached");
+      META_ADS.requestRewarded(() => {
+        S.ad = { d: today(), t: Date.now(), n: ad.n + 1 };
+        addCoins(50);
+        toast("Claimed +50 Coins");
+        if (["home", "earn", "store", "prof"].includes(cur)) go(cur);
+      });
+    }
+
+    function earnComment() {
+      if (S.cm.d !== today()) S.cm = { d: today(), n: 0 };
+      if (S.cm.n >= 6) return;
+      S.cm.n++;
+      addCoins(5);
+      toast(`Comment Bonus +5 Coins (${S.cm.n}/6 today)`);
+    }
+
+    // ===== EARN COINS =====
+    V.earn = () => {
+      const claimed = S.dly === today();
+      const cmCount = S.cm.d === today() ? S.cm.n : 0;
+      return `
+        ${hdr("EARN COINS")}
+        <div class="ribbon">Earn Coins FREE – Win, Watch Ads, Daily Login!</div>
+        <div class="frame" style="text-align:center;padding:14px">
+          <div class="gold-txt" style="font-size:11px;font-weight:800;letter-spacing:1px">YOUR COIN BALANCE</div>
+          <div class="row" style="justify-content:center;gap:8px;margin:6px 0">
+            ${svgUse("ico-coin", 34, 34, "style='flex:none'")}
+            <span class="royal-title" style="font-size:32px;flex:none">${fmt(S.coins)}</span>
+            <span class="gold-txt" style="font-size:16px;font-weight:800;flex:none">Coins</span>
+          </div>
+          <div class="mut">Coins are for in-game items only · No cash value</div>
+        </div>
+        <div class="sec-hd">EARN MORE COINS</div>
+        ${[
+          ["Win Game", "+40 Coins · Ranked 1v1", "play1v1()", "PLAY", false],
+          ["Watch Ads", "+50 Coins", "reward()", "CLAIM", false],
+          ["Daily Login", "+20 Coins", "daily()", claimed ? "CLAIMED" : "CLAIM", claimed],
+          ["Comment", `+5 Coins · Match chat (${cmCount}/6 today)`, "play1v1()", "PLAY", false]
+        ].map(([title, sub, fn, btn, dis]) => `
+          <div class="card row" style="padding:10px">
+            ${svgUse("ico-coin", 28, 28, "style='flex:none'")}
+            <div style="flex:3">
+              <div style="font-weight:800;font-size:14px">${title}</div>
+              <div class="mut">${sub}</div>
+            </div>
+            <button class="btn btn-gold" style="flex:0 0 88px;margin:0;padding:9px 6px;font-size:11px" ${dis ? "disabled" : ""} onclick="${fn}">${btn}</button>
+          </div>
+        `).join("")}
+      `;
+    };
+
+    // ===== LEADERBOARD =====
+    V.lb = () => `
+      ${hdr("LEADERBOARD")}
+      <div class="ribbon">Season 14 · Top 10 Champions</div>
+      <div id="lbx"><div class="card">Loading rankings...</div></div>
+    `;
+
+    V.lb_ = async () => {
+      const box = $("#lbx");
+      if (!box) return;
+      const list = [{ name: S.name || "You", cc: S.cc, av: S.av, wins: S.wins, coins: S.coins, points: S.points || S.wins * 25 }];
+      if (ON && FDB) {
+        try {
+          const snap = await FDB.ref("users").orderByChild("points").limitToLast(20).once("value");
+          snap.forEach((c) => {
+            const v = c.val() || {};
+            if (c.key !== UID) {
+              list.push({ name: v.name || "Player", cc: v.cc || "PH", av: v.av || "K1", wins: v.wins || 0, coins: v.coins || 0, points: v.points || 0 });
+            }
+          });
+        } catch (_) {}
+      }
+      list.sort((a, b) => (b.points || 0) - (a.points || 0) || (b.wins || 0) - (a.wins || 0));
+      const top10 = list.slice(0, 10);
+      box.innerHTML = top10.map((p, idx) => `
+        <div class="card row" style="padding:9px">
+          <div class="gold-txt" style="flex:0 0 34px;font-weight:900;font-size:16px">#${idx + 1}</div>
+          <div class="avatar-ring" style="width:40px;height:40px;font-size:13px;flex:0 0 40px">${esc(p.av)}</div>
+          <div style="flex:3">
+            <div style="font-weight:800">${esc(p.name)} <span class="mut">· ${esc(p.cc)}</span></div>
+            <div class="mut">${fmt(p.wins)} Wins · ${fmt(p.coins)} Coins</div>
+          </div>
+        </div>
+      `).join("");
+    };
+
+    // ===== GAME & 1V1 MATCHMAKING =====
+    const AIN = ["Easy", "Medium", "Hard", "Expert"];
+
+    function aiPick() {
+      modal(`
+        <h3 class="royal-title" style="font-size:18px;margin-bottom:8px">PLAY WITH AI</h3>
+        <div class="mut" style="margin-bottom:10px">Free Practice Coins · No cash value</div>
+        ${["EASY · Casual", "MEDIUM · Tactical", "HARD · Strategic", "EXPERT · Master"].map((lbl, i) => `
+          <button class="btn ${i === 1 ? "btn-gold" : ""}" onclick="closeM();newGame({mode:'ai',lv:${i}})">${lbl}</button>
+        `).join("")}
+        <button class="btn" onclick="closeM()">CANCEL</button>
+      `);
+    }
+
+    function play1v1() {
+      if (S.coins < 20) {
+        return modal(`
+          <h3 class="royal-title" style="font-size:18px">INSUFFICIENT COINS</h3>
+          <p class="mut" style="margin:8px 0 12px">Ranked 1v1 requires 20 Coins entry.</p>
+          <button class="btn btn-gold" onclick="closeM();go('earn')">EARN FREE COINS</button>
+          <button class="btn" onclick="closeM()">CLOSE</button>
+        `);
+      }
+      if (!ON || !FDB || !UID) {
+        return toast("Reconnect to Firebase Realtime Database for 1v1");
+      }
+      NET.queue();
+    }
+
+    function newGame(o) {
+      GM = o;
+      go("game");
+      G = {
+        b: init(), t: 1, me: o.me || 1, sel: null, mv: [], last: null,
+        mode: o.mode, lv: o.lv || 0, tm: [300, 300], cap: [0, 0],
+        h: [], n: 0, over: 0, settled: 0,
+        opp: o.opp || { name: "AI_RIVAL", cc: "PH", av: "AI", elo: 1200 },
+        room: o.room, busy: 0
+      };
+      G.mv = moves(G.b, 1);
+      rb($("#bd"), G);
+      hud();
+    }
+
+    V.game = () => {
+      const o = GM;
+      const isAi = o.mode === "ai";
+      const opp = o.opp || { name: "AI_RIVAL", av: "AI", elo: 1200 };
+      return `
+        <div class="top-hdr">
+          <div class="back-btn" onclick="resign()">‹</div>
+          <div class="brand-lockup">${svgUse("ico-crown", 24, 17)}<span class="royal-title" style="font-size:17px">DAMA ROYALE 3D</span></div>
+          <span class="live-badge" style="${o.mode === "rm" ? "" : "background:#1E3A8A"}">${o.mode === "rm" ? "● LIVE" : "PRACTICE"}</span>
+        </div>
+
+        ${isAi ? `<div class="row" style="margin:6px 0">${AIN.map((x, i) => `<button class="btn ${i === o.lv ? "btn-gold" : ""}" style="padding:6px;font-size:10px;margin:0" onclick="newGame({mode:'ai',lv:${i}})">${x}</button>`).join("")}</div>` : ""}
+
+        <div class="cams-grid">
+          <div class="cam-col">
+            <div class="cam-circle" onclick="camToggle()" title="Tap to toggle camera">
+              <video id="myCam" autoplay playsinline muted></video>
+              <span id="avMe" style="font-weight:900;font-size:20px;color:var(--gold1)">${esc(S.av)}</span>
+            </div>
+            <button type="button" class="mic-btn" id="micMe" onclick="micToggle()">MIC</button>
+            <div class="cam-name">You · ${fmt(S.elo || 1200)} Elo<small>● Online</small></div>
+          </div>
+          <div>
+            <div class="turn-pill" id="tn">Turn: Your Move</div>
+          </div>
+          <div class="cam-col">
+            <div class="cam-circle">
+              <video id="oppCam" autoplay playsinline></video>
+              <span id="avOpp" style="font-weight:900;font-size:20px;color:var(--gold1)">${esc(opp.av || "OP")}</span>
+            </div>
+            <button type="button" class="mic-btn" onclick="const v=$('#oppCam');v.muted=!v.muted;this.textContent=v.muted?'MUTE':'MIC'">MIC</button>
+            <div class="cam-name">${esc(opp.name)} · ${fmt(opp.elo || 1200)} Elo<small>● ${isAi ? "AI" : "Online"}</small></div>
+          </div>
+        </div>
+
+        <div class="board-wrap"><div id="bd"></div></div>
+        <div class="status-banner">You are Blue — Capture the Gold Piece!</div>
+
+        <div class="wager-row">
+          <span class="wager-chip">${isAi ? "Practice: <b>+50</b>" : "Entry: <b>20</b> coins"}</span>
+          <span class="wager-chip">${isAi ? "Free Training" : "Winner: <b>40</b> coins"}</span>
+        </div>
+
+        <div class="row">
+          ${isAi ? `<button class="btn" onclick="undo()">UNDO</button>` : ""}
+          <button class="btn" onclick="resign()">${isAi ? "EXIT" : "RESIGN"}</button>
+          <button class="btn" onclick="document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()">FULLSCREEN</button>
+        </div>
+
+        ${isAi ? "" : `
+          <div class="chat-box">
+            <div class="row" style="justify-content:space-between">
+              <span class="gold-txt" style="font-size:12px;font-weight:800">Chat</span>
+              <span class="mut">+5 Coins/msg (6/day)</span>
+            </div>
+            <div class="chat-msgs" id="cm"></div>
+            <div class="row" style="gap:6px">
+              <input id="ci" placeholder="Type a message..." maxlength="100" style="margin:0;padding:8px 10px" onkeydown="event.key==='Enter'&&sendC()" />
+              <button class="btn btn-gold" style="flex:0 0 62px;margin:0;padding:8px" onclick="sendC()">SEND</button>
+            </div>
+          </div>
+        `}
+      `;
+    };
+
+    function hud() {
+      const g = G;
+      if (!g || !g.b || !$("#tn")) return;
+      const f = (n) => Math.floor(Math.max(0, n) / 60) + ":" + String(Math.max(0, n) % 60).padStart(2, "0");
+      const mine = g.t === g.me;
+      $("#tn").innerHTML = g.mode === "ai"
+        ? (mine ? "Turn: Your Move" : "AI Thinking...")
+        : (mine ? "Turn: Your Move" : "Turn: " + esc(g.opp.name)) + "<br>" + f(g.tm[g.t - 1]);
+    }
+
+    setInterval(() => {
+      const g = G;
+      if (g && g.b && !g.over && g.mode === "rm") {
+        g.tm[g.t - 1]--;
+        hud();
+        if (g.tm[g.t - 1] <= 0 && g.t === g.me) NET.finishRoom(g, 3 - g.me, "timeout");
+      }
+    }, 1000);
+
+    function tap(i) {
+      const g = G;
+      if (!g || g.over || g.busy || g.t !== g.me) return;
+      if (ow(g.b[i]) === g.me && g.mv.some((m) => m.p[0] === i)) g.sel = i;
+      else if (g.sel != null) {
+        const m = g.mv.find((x) => x.p[0] === g.sel && x.p[x.p.length - 1] === i);
+        if (m) return play(m);
+        g.sel = null;
+      }
+      rb($("#bd"), g);
+    }
+
+    function play(m) {
+      const g = G;
+      if (!g || !m) return;
+      if (g.mode === "rm") return NET.mv(g, m);
+      if (g.t === g.me) g.h.push({ b: g.b, last: g.last, cap: [...g.cap] });
+      g.cap[g.t - 1] += m.c.length;
+      g.b = ap(g.b, m);
+      g.last = [m.p[0], m.p[m.p.length - 1]];
+      g.t = 3 - g.t;
+      g.sel = null;
+      g.n++;
+      g.mv = moves(g.b, g.t);
+      rb($("#bd"), g);
+      hud();
+      if (!g.mv.length) return end(3 - g.t === g.me ? "w" : "l");
+      if (g.n > 150) return end("d");
+      if (g.t !== g.me) {
+        setTimeout(() => {
+          if (G === g && !g.over) play(ai(g.b, g.t, g.lv));
+        }, 650);
+      }
+    }
+
+    function undo() {
+      const g = G;
+      if (!g || g.mode !== "ai" || g.over || g.t !== g.me || !g.h.length) return;
+      const s = g.h.pop();
+      g.b = s.b; g.last = s.last; g.cap = s.cap;
+      g.mv = moves(g.b, g.me);
+      g.sel = null;
+      rb($("#bd"), g);
+      hud();
+    }
+
+    function resign() {
+      if (!G || G.over || G.mode === "ai") return go("home");
+      if (confirm("Resign this match?")) {
+        NET.finishRoom(G, 3 - G.me, "resign");
+      }
+    }
+
+    function end(r) {
+      const g = G;
+      if (!g || g.over) return;
+      g.over = 1;
+      META_ADS.showAfterGameInterstitial();
+      let msg = "", title = "";
+      if (g.mode === "ai") {
+        if (r === "w") { S.prac += 50; S.aiw++; msg = "Practice Win +50 Practice Coins"; }
+        else msg = r === "l" ? "Practice Loss" : "Draw";
+        title = r === "w" ? "VICTORY" : r === "l" ? "DEFEAT" : "DRAW";
+      } else {
+        S.games++;
+        if (r === "w") { S.wins++; S.points = (S.points || 0) + 25; S.elo = (S.elo || 1200) + 10; }
+        else if (r === "l") { S.elo = Math.max(800, (S.elo || 1200) - 10); }
+        msg = r === "w" ? "Match Won (+40 Coins)" : r === "l" ? "Match Lost" : "Match Drawn (+20 Coins)";
+        title = r === "w" ? "VICTORY" : r === "l" ? "DEFEAT" : "DRAW";
+      }
+      sv();
+      modal(`
+        <div style="text-align:center">
+          <div style="margin-bottom:6px">${svgUse("ico-crown", 52, 36)}</div>
+          <h2 class="royal-title" style="font-size:24px">${title}</h2>
+          <p style="margin:10px 0 14px;font-size:13px">${msg}</p>
+          <button class="btn btn-gold" onclick="closeM();${g.mode === "ai" ? "newGame({mode:'ai',lv:" + g.lv + "})" : "play1v1()"}">PLAY AGAIN</button>
+          <button class="btn" onclick="closeM();go('home')">HOME</button>
+        </div>
+      `);
+    }
+
+    function sendC() {
+      const inp = $("#ci");
+      if (!inp) return;
+      const txt = esc(inp.value.trim());
+      if (!txt) return;
+      inp.value = "";
+      if (G && G.mode === "rm" && ON) {
+        NET.chat(txt);
+        earnComment();
+      } else {
+        toast("Connect in a live 1v1 match to send chat");
+      }
+    }
+
+    // ===== WEBRTC LIVE CAMERA =====
+    const RTC_CFG = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }] };
+    let camStream = null, pc = null, rtcOff = [], camCtx = null;
+
+    async function camToggle() {
+      if (camStream) return camOff();
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return toast("Camera not available");
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 240 }, audio: true });
+      } catch (_) {
+        camStream = null;
+        return toast("Camera permission denied");
+      }
+      const v = $("#myCam");
+      if (v) {
+        v.srcObject = camStream;
+        v.muted = true;
+        v.classList.add("on");
+        v.play().catch(() => {});
+        const a = $("#avMe");
+        if (a) a.style.display = "none";
+      }
+      if (ON && FDB && G && G.mode === "rm" && G.room) rtcStart(G.room, G.me === 1);
+    }
+
+    function camOff() {
+      rtcOff.forEach((fn) => { try { fn(); } catch (_) {} });
+      rtcOff = [];
+      if (pc) { try { pc.close(); } catch (_) {} pc = null; }
+      if (camStream) { camStream.getTracks().forEach((t) => t.stop()); camStream = null; }
+      if (camCtx) {
+        const c = camCtx;
+        camCtx = null;
+        c.sig.child(c.me).remove().catch(() => {});
+        c.sig.child(c.caller ? "offer" : "answer").remove().catch(() => {});
+      }
+      ["#myCam", "#oppCam"].forEach((sel) => {
+        const e = $(sel);
+        if (e) { e.srcObject = null; e.classList.remove("on"); }
+      });
+      const aMe = $("#avMe"); if (aMe) aMe.style.display = "";
+      const aOpp = $("#avOpp"); if (aOpp) aOpp.style.display = "";
+    }
+
+    function micToggle() {
+      if (!camStream) return toast("Tap your camera circle first");
+      const t = camStream.getAudioTracks()[0];
+      if (t) {
+        t.enabled = !t.enabled;
+        const b = $("#micMe");
+        if (b) b.textContent = t.enabled ? "MIC" : "MUTE";
+      }
+    }
+
+    async function rtcStart(room, caller) {
+      const P = pc = new RTCPeerConnection(RTC_CFG);
+      camStream.getTracks().forEach((t) => P.addTrack(t, camStream));
+      P.ontrack = (ev) => {
+        const o = $("#oppCam");
+        if (o && ev.streams[0]) {
+          o.srcObject = ev.streams[0];
+          o.classList.add("on");
+          o.play().catch(() => {});
+          const a = $("#avOpp");
+          if (a) a.style.display = "none";
+        }
+      };
+      const sig = FDB.ref(`rtc/${room}`);
+      const me = caller ? "p1" : "p2", opp = caller ? "p2" : "p1", q = [];
+      let ready = false;
+      camCtx = { sig, me, caller };
+      const flush = async () => {
+        ready = true;
+        for (const c of q.splice(0)) await P.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+      };
+      P.onicecandidate = (ev) => { if (ev.candidate) sig.child(`${me}/candidates`).push(ev.candidate.toJSON()); };
+      if (caller) {
+        const o = await P.createOffer();
+        await P.setLocalDescription(o);
+        await sig.child("offer").set({ type: o.type, sdp: o.sdp });
+      }
+      const a = sig.child("offer").on("value", async (s) => {
+        const v = s.val();
+        if (!caller && v && !P.remoteDescription) {
+          await P.setRemoteDescription(new RTCSessionDescription(v));
+          const an = await P.createAnswer();
+          await P.setLocalDescription(an);
+          await sig.child("answer").set({ type: an.type, sdp: an.sdp });
+          await flush();
+        }
+      });
+      const b = sig.child("answer").on("value", async (s) => {
+        const v = s.val();
+        if (caller && v && !P.remoteDescription) {
+          await P.setRemoteDescription(new RTCSessionDescription(v));
+          await flush();
+        }
+      });
+      const c = sig.child(`${opp}/candidates`).on("child_added", (s) => {
+        const x = s.val();
+        if (!x) return;
+        if (ready) P.addIceCandidate(new RTCIceCandidate(x)).catch(() => {});
+        else q.push(x);
+      });
+      rtcOff = [
+        () => sig.child("offer").off("value", a),
+        () => sig.child("answer").off("value", b),
+        () => sig.child(`${opp}/candidates`).off("child_added", c)
+      ];
+    }
+
+    // ===== STORE =====
+    const IT = [
+      ["chat", "re", "Royale Crown Badge", 0.49],
+      ["chat", "fe", "Ace Tag", 0.49],
+      ["chat", "gb", "Gold Chat Bubble", 0.99],
+      ["cam", "rc", "Royale Crown", 1.99],
+      ["cam", "gf", "Gold Frame", 0.99],
+      ["cam", "ff", "Royal Spark", 0.99],
+      ["board", "wood", "Wood Board", 0],
+      ["board", "gold", "Gold Board", 0.99],
+      ["board", "royale", "Royale Board", 1.99]
+    ];
+    const CP = [
+      ["coins_bronze", "BRONZE", 1000, 0, 0.35, 20, "pack-bronze", ""],
+      ["coins_silver", "SILVER", 5000, 500, 1.49, 85, "pack-silver pack-pop", "+500 FREE"],
+      ["coins_gold", "GOLD ROYALE", 14000, 2000, 2.99, 170, "pack-gold", "+2,000 FREE"]
+    ];
+    const MB = [
+      ["sub_pro_month", "DAMA PRO", "1 Month", 1.99],
+      ["sub_pro_year", "DAMA PRO", "1 Year", 9.99],
+      ["vip_life", "ROYALE VIP", "Lifetime", 19.99]
+    ];
+    const PD = {};
+    IT.forEach((i) => { PD["item_" + i[1]] = { sku: "item_" + i[1], name: i[2], usd: i[3], kind: "item", id: i[1] }; });
+    CP.forEach((c) => { PD[c[0]] = { sku: c[0], name: fmt(c[2] + c[3]) + " Coins", usd: c[4], kind: "coins", amt: c[2] + c[3] }; });
+    MB.forEach((m) => { PD[m[0]] = { sku: m[0], name: m[1] + " - " + m[2], usd: m[3], kind: "mem", days: m[0] === "sub_pro_month" ? 30 : m[0] === "sub_pro_year" ? 365 : 0 }; });
+
+    V.store = () => `
+      ${hdr("DAMA ROYALE 3D - STORE")}
+      <div class="pill-bar" style="justify-content:center;margin:4px 0 8px">
+        <span class="pill">${svgUse("ico-coin", 16, 16)} <span class="gold-txt">${fmt(S.coins)} Coins</span></span>
+      </div>
+      ${[
+        ["chat", "CHAT STORE"],
+        ["cam", "CAM OVERLAY"],
+        ["board", "BOARD SKIN"]
+      ].map(([cat, label]) => `
+        <div class="sec-hd">${label}</div>
+        <div class="g3">${IT.filter((x) => x[0] === cat).map((x) => {
+          const owned = !!(S.own && S.own[x[1]]);
+          const eq = S.eq[cat] === x[1];
+          return `
+            <div class="store-item">
+              ${svgUse(cat === "board" ? "ico-crown" : "ico-coin", 30, 26)}
+              <div class="nm">${x[2]}</div>
+              <div class="pr">${x[3] ? "$" + x[3].toFixed(2) : "FREE"}</div>
+              <button class="buy-sm ${owned ? "own" : ""}" onclick="sbuy('${cat}','${x[1]}')">${owned ? (eq ? "EQUIPPED" : "EQUIP") : "BUY"}</button>
+            </div>
+          `;
+        }).join("")}</div>
+      `).join("")}
+
+      <div class="sec-hd">COINS PACKAGE</div>
+      <div class="g3" style="margin-top:10px">${CP.map(([sku, tier, base, bonus, usd, php, cls, tag]) => `
+        <div class="store-item pack-card ${cls}">
+          <div style="font-size:10px;font-weight:900;letter-spacing:0.5px">${tier}</div>
+          ${svgUse("ico-coin", 34, 34)}
+          <div style="font-size:13px;font-weight:900">${fmt(base + bonus)} Coins</div>
+          <div class="pr">$${usd.toFixed(2)} / ₱${php}</div>
+          <div class="mut" style="font-size:10px;font-weight:800;min-height:14px">${tag}</div>
+          <button class="buy-sm" onclick="bsku('${sku}')">BUY</button>
+        </div>
+      `).join("")}</div>
+
+      <div class="sec-hd">PRO &amp; VIP MEMBERSHIP</div>
+      ${MB.map(([sku, name, term, usd]) => {
+        const active = isPro() && S.mem.sku === sku;
+        return `
+          <div class="card row">
+            ${svgUse("ico-crown", 32, 24, "style='flex:none'")}
+            <div style="flex:3">
+              <div class="gold-txt" style="font-weight:800">${name} · ${term}</div>
+              <div class="mut">Ad-free experience</div>
+            </div>
+            <button class="buy-sm ${active ? "own" : ""}" style="flex:0 0 82px;padding:9px 4px" onclick="bsku('${sku}')">${active ? "ACTIVE" : "$" + usd.toFixed(2)}</button>
+          </div>
+        `;
+      }).join("")}
+    `;
+
+    function sbuy(cat, id) {
+      if (S.own && S.own[id]) {
+        S.eq[cat] = id;
+        sv();
+        toast("Equipped");
+        return go("store");
+      }
+      bsku("item_" + id);
+    }
+
+    async function bsku(sku) {
+      const p = PD[sku];
+      if (!p) return;
+      if (window.getDigitalGoodsService && window.PaymentRequest) {
+        modal('<h3 class="royal-title" style="font-size:16px;text-align:center">Opening Google Play...</h3>');
+        try {
+          const svc = await window.getDigitalGoodsService("https://play.google.com/billing");
+          const res = await new PaymentRequest([{ supportedMethods: "https://play.google.com/billing", data: { sku } }]).show();
+          const tok = res.details.purchaseToken;
+          await res.complete("success");
+          if (p.kind === "coins") await svc.consume(tok);
+          applyPurchase(p);
+          closeM();
+          toast("Unlocked");
+          return go("store");
+        } catch (e) {
+          closeM();
+          return toast(e && e.name === "AbortError" ? "Cancelled" : "Billing unavailable");
+        }
+      }
+      applyPurchase(p);
+      toast("Unlocked");
+      go("store");
+    }
+
+    function applyPurchase(p) {
+      if (p.kind === "coins") addCoins(p.amt);
+      else if (p.kind === "mem") { S.mem = { sku: p.sku, until: p.days ? Date.now() + p.days * 864e5 : 0 }; sv(); }
+      else { S.own[p.id] = 1; sv(); }
+    }
+
+    // ===== MARKETPLACE =====
+    let mt = "b";
+    const nmI = (id) => (IT.find((x) => x[1] === id) || [])[2] || id;
+
+    V.mkt = () => `
+      ${hdr("MARKETPLACE")}
+      <div class="row">
+        ${[["b", "BUY"], ["s", "SELL"], ["e", "SALES"]].map(([k, lbl]) => `
+          <button class="btn ${mt === k ? "btn-gold" : ""}" style="padding:8px;font-size:11px" onclick="mt='${k}';go('mkt')">${lbl}</button>
+        `).join("")}
+      </div>
+      <div id="mk"><div class="card">Loading marketplace...</div></div>
+    `;
+
+    V.mkt_ = async () => {
+      const box = $("#mk");
+      if (!box) return;
+      if (!ON || !FDB) {
+        box.innerHTML = '<div class="card">Connect online to trade skins with real players.</div>';
+        return;
+      }
+      if (mt === "s") {
+        const tradable = IT.filter((x) => S.own && S.own[x[1]] && ["gold", "royale", "re", "fe", "gb", "rc", "gf", "ff"].includes(x[1]));
+        box.innerHTML = tradable.length
+          ? `<div class="card"><select id="sk">${tradable.map((x) => `<option value="${x[1]}">${x[2]}</option>`).join("")}</select><input id="sp" type="number" placeholder="Price in Coins (min 100)" /><div class="mut">10% marketplace fee applies</div><button class="btn btn-gold" onclick="lst()">LIST SKIN</button></div>`
+          : '<div class="card">No tradable skins owned yet.</div>';
+        return;
+      }
+      if (mt === "e") {
+        let rows = [];
+        try {
+          const snap = await FDB.ref(`earnings/${UID}`).once("value");
+          rows = Object.values(snap.val() || {});
+        } catch (_) {}
+        const gross = rows.reduce((s, r) => s + (r.coins || 0), 0);
+        const net = rows.reduce((s, r) => s + (r.net || 0), 0);
+        box.innerHTML = `<div class="card">Sales: ${rows.length}<br>Gross: ${gross} Coins · Fee: -${gross - net}<br><span class="gold-txt" style="font-weight:800">Net: ${net} Coins</span></div>` +
+          rows.map((r) => `<div class="card mut">${nmI(r.skin)} · ${r.coins} Coins · Net ${r.net}</div>`).join("");
+        return;
+      }
+      let offers = [];
+      try {
+        const snap = await FDB.ref("marketplace").once("value");
+        const raw = snap.val() || {};
+        offers = Object.keys(raw).map((id) => ({
+          id,
+          seller: raw[id].sellerUsername,
+          cc: raw[id].sellerFlag,
+          skin: raw[id].skin,
+          coins: raw[id].coins,
+          own: raw[id].sellerID === UID
+        }));
+      } catch (_) {}
+      offers.sort((a, b) => a.coins - b.coins);
+      box.innerHTML = offers.length
+        ? offers.map((o) => `
+          <div class="card row">
+            <div style="flex:3">
+              <div style="font-weight:800">${esc(o.seller)} <span class="mut">· ${esc(o.cc || "")}</span></div>
+              <div class="gold-txt" style="font-weight:800">${nmI(o.skin)} — ${fmt(o.coins)} Coins</div>
+            </div>
+            ${o.own
+              ? `<button class="btn" style="flex:0 0 84px;margin:0;padding:8px;font-size:11px" onclick="mcx('${o.id}')">CANCEL</button>`
+              : `<button class="btn btn-gold" style="flex:0 0 84px;margin:0;padding:8px;font-size:11px" onclick="mbuy('${o.id}')">BUY</button>`}
+          </div>
+        `).join("")
+        : '<div class="card">No active listings right now.</div>';
+    };
+
+    async function mbuy(id) {
+      if (!ON || !FDB || !UID) return toast("Offline");
+      const ref = FDB.ref(`marketplace/${id}`);
+      let off = null;
+      await ref.transaction((v) => {
+        off = null;
+        if (!v || v.sellerID === UID) return v;
+        off = v;
+        return null;
+      });
+      if (!off) return toast("Offer unavailable");
+      if (S.coins < off.coins) { await ref.set(off); return toast("Not enough Coins"); }
+      const fee = Math.floor(off.coins * 0.1), net = off.coins - fee;
+      addCoins(-off.coins);
+      S.own[off.skin] = 1;
+      sv();
+      await FDB.ref(`users/${off.sellerID}/coins`).transaction((v) => (v || 0) + net).catch(() => {});
+      await FDB.ref(`earnings/${off.sellerID}/${id}`).set({ skin: off.skin, coins: off.coins, fee, net, t: Date.now() }).catch(() => {});
+      toast("Skin purchased");
+      go("mkt");
+    }
+
+    async function mcx(id) {
+      if (!ON || !FDB || !UID) return toast("Offline");
+      const ref = FDB.ref(`marketplace/${id}`);
+      let off = null;
+      await ref.transaction((v) => {
+        off = null;
+        if (!v || v.sellerID !== UID) return v;
+        off = v;
+        return null;
+      });
+      if (!off) return toast("Offer not found");
+      S.own[off.skin] = 1;
+      sv();
+      toast("Listing cancelled");
+      go("mkt");
+    }
+
+    async function lst() {
+      const sk = $("#sk").value;
+      const coins = parseInt($("#sp").value, 10);
+      if (!Number.isInteger(coins) || coins < 100) return toast("Minimum 100 Coins");
+      if (!ON || !FDB || !UID) return toast("Offline");
+      if (!S.own[sk]) return toast("Skin not owned");
+      delete S.own[sk];
+      for (const k in S.eq) if (S.eq[k] === sk) delete S.eq[k];
+      sv();
+      await FDB.ref("marketplace").push({
+        sellerID: UID,
+        sellerUsername: S.name,
+        sellerFlag: S.cc,
+        skin: sk,
+        coins,
+        t: Date.now()
+      });
+      toast("Listed");
+      mt = "b";
+      go("mkt");
+    }
+
+    // ===== PROFILE =====
+    V.prof = () => {
+      const losses = Math.max(0, S.games - S.wins);
+      const winRate = S.games ? ((S.wins / S.games) * 100).toFixed(1) : "0.0";
+      return `
+        ${hdr("DAMA ROYALE 3D")}
+        <div class="frame" style="text-align:center;padding:16px 12px">
+          <div class="avatar-ring" style="width:84px;height:84px;font-size:28px;margin:0 auto 8px;cursor:pointer" onclick="S.av=AVATARS[(AVATARS.indexOf(S.av)+1)%AVATARS.length];sv();go('prof')">${esc(S.av)}</div>
+          <div style="font-size:20px;font-weight:900;cursor:pointer" onclick="const n=prompt('Username',S.name);if(n){S.name=esc(n).trim().slice(0,14);sv();if(ON)NET.login();go('prof')}">${esc(S.name)}</div>
+          <div style="display:inline-block;margin:6px 0 12px;padding:3px 12px;border-radius:12px;border:1px solid rgba(226,180,40,0.5);font-size:11px;font-weight:800;color:var(--gold1)">LEVEL ${lvl()} · ${esc(S.cc)}</div>
+
+          <div class="g3" style="border-top:1px solid rgba(226,180,40,0.22);border-bottom:1px solid rgba(226,180,40,0.22);padding:10px 0">
+            <div><div class="mut" style="font-size:10px;font-weight:800">WINS</div><div style="font-size:18px;font-weight:900">${fmt(S.wins)}</div></div>
+            <div><div class="mut" style="font-size:10px;font-weight:800">LOSSES</div><div style="font-size:18px;font-weight:900">${fmt(losses)}</div></div>
+            <div><div class="mut" style="font-size:10px;font-weight:800">W/L</div><div class="gold-txt" style="font-size:18px;font-weight:900">${winRate}%</div></div>
+          </div>
+
+          <div class="sec-hd" style="justify-content:center;border:0;margin:10px 0 6px">ECONOMY</div>
+          <div class="card row" style="justify-content:space-between">
+            <span class="row" style="justify-content:flex-start;gap:8px">${svgUse("ico-coin", 22, 22, "style='flex:none'")} <b>Total Coins</b></span>
+            <span class="gold-txt" style="font-weight:900;font-size:15px">${fmt(S.coins)}</span>
+          </div>
+          <div class="card row" style="justify-content:space-between">
+            <span class="mut" style="font-weight:800">Practice Coins (AI)</span>
+            <span style="font-weight:800">${fmt(S.prac)}</span>
+          </div>
+          <div class="mut" style="margin-top:6px">Coins are for in-game items only · No cash value</div>
+        </div>
+        <button class="btn" onclick="go('earn')">EARN FREE COINS</button>
+        <button class="btn" onclick="S.name='';sv();go('splash')">SWITCH ACCOUNT</button>
+      `;
+    };
+
+    // ===== FIREBASE SPARK REALTIME LAYER =====
+    const NET = { offs: [], st: "off", iv: null, qOff: null, off: 0 };
+    const R = (p) => FDB.ref(p);
+    const pub = () => ({ name: S.name, cc: S.cc, av: S.av });
+    const SSV = () => firebase.database.ServerValue.TIMESTAMP;
+    const on = (r, e, f) => { r.on(e, f); NET.offs.push([r, e, f]); };
+
+    NET.leave = () => {
+      clearInterval(NET.iv);
+      NET.iv = null;
+      if (NET.qOff) { try { NET.qOff.ref.off("value", NET.qOff.fn); } catch (_) {} NET.qOff = null; }
+      camOff();
+      NET.offs.forEach(([r, e, f]) => { try { r.off(e, f); } catch (_) {} });
+      NET.offs = [];
+    };
+
+    if (firebaseConfig.apiKey && window.firebase) {
+      try {
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        FDB = firebase.database();
+        NET.st = "try";
+        firebase.auth().onAuthStateChanged((u) => {
+          if (u) {
+            UID = u.uid;
+            if (S.name) NET.login();
+          } else {
+            firebase.auth().signInAnonymously().catch(() => {
+              NET.st = "fail";
+              if (cur === "home") V.home_();
+            });
+          }
+        });
+      } catch (_) {
+        NET.st = "fail";
+      }
+    }
+
+    window.NETSV = () => {
+      if (!ON || !UID) return;
+      R(`users/${UID}`).update({
+        coins: S.coins,
+        practiceCoins: S.prac,
+        wins: S.wins,
+        aiw: S.aiw,
+        points: S.points || 0,
+        elo: S.elo || 1200,
+        own: S.own || { wood: 1 }
+      }).catch(() => {});
+      for (const k in S.eq) R(`users/${UID}/eq/${k}`).set(S.eq[k]).catch(() => {});
+    };
+
+    NET.login = async () => {
+      if (NET.st === "off" || !UID || !S.name) return;
+      ON = true;
+      NET.st = "on";
+      const r = R(`users/${UID}`);
+      const snap = await r.once("value").catch(() => null);
+      if (!snap || !snap.exists()) {
+        await r.set({
+          name: S.name, cc: S.cc, av: S.av,
+          coins: S.coins, practiceCoins: S.prac,
+          wins: S.wins, aiw: S.aiw, points: S.points || 0, elo: S.elo || 1200,
+          own: S.own || { wood: 1 }, online: true, lastSeen: SSV()
+        }).catch(() => {});
+      } else {
+        await r.update({ ...pub(), online: true, lastSeen: SSV() }).catch(() => {});
+        const v = snap.val() || {};
+        if (typeof v.coins === "number") S.coins = v.coins;
+        if (typeof v.wins === "number") S.wins = v.wins;
+        if (typeof v.points === "number") S.points = v.points;
+        if (typeof v.elo === "number") S.elo = v.elo;
+        if (v.own) S.own = v.own;
+        try { localStorage.setItem("dama_spark_v1", JSON.stringify(S)); } catch (_) {}
+      }
+
+      R(".info/connected").on("value", (c) => {
+        if (c.val()) {
+          r.child("online").onDisconnect().set(false).catch(() => {});
+          r.child("lastSeen").onDisconnect().set(SSV()).catch(() => {});
+          r.child("online").set(true).catch(() => {});
+          r.child("lastSeen").set(SSV()).catch(() => {});
+        }
+      });
+
+      r.child("joinRoom").on("value", (j) => {
+        const roomId = j.val();
+        if (roomId) {
+          r.child("joinRoom").remove().catch(() => {});
+          NET.open(roomId);
+        }
+      });
+
+      FDB.ref(".info/serverTimeOffset").on("value", (s) => { NET.off = s.val() || 0; });
+      if (cur === "home") go("home");
+    };
+
+    NET.queue = async () => {
+      if (S.coins < 20) return toast("Not enough Coins");
+      addCoins(-20);
+      const t0 = Date.now();
+      const renderQ = (longWait) => modal(`
+        <div style="text-align:center">
+          <div style="margin-bottom:6px">${svgUse("ico-crown", 44, 30)}</div>
+          <h3 class="royal-title" style="font-size:18px">SEARCHING OPPONENT</h3>
+          <p class="mut" style="margin:8px 0 12px">${longWait ? "Still searching for another player..." : "Entry 20 Coins · Live 1v1 Match"}</p>
+          <button class="btn" onclick="NET.cancel()">CANCEL (REFUND 20)</button>
+        </div>
+      `);
+      NET.cancel = async () => {
+        clearInterval(NET.iv);
+        NET.iv = null;
+        if (NET.qOff) { try { NET.qOff.ref.off("value", NET.qOff.fn); } catch (_) {} NET.qOff = null; }
+        closeM();
+        const qSnap = await R(`queue/${UID}`).once("value").catch(() => null);
+        if (qSnap && qSnap.exists()) {
+          await R(`queue/${UID}`).remove().catch(() => {});
+          addCoins(20);
+          toast("Refunded 20 Coins");
+        }
+        go("home");
+      };
+      renderQ(false);
+
+      const myEntry = { uid: UID, name: S.name, cc: S.cc, av: S.av, elo: S.elo || 1200, t: Date.now() };
+      await R(`queue/${UID}`).set(myEntry);
+
+      const qRef = R("queue");
+      const qFn = async (snap) => {
+        const all = snap.val() || {};
+        if (!all[UID]) return;
+        const opp = Object.values(all).find((x) => x && x.uid !== UID);
+        if (!opp) return;
+        const roomId = R("rooms").push().key;
+        const now = Date.now();
+        await R(`rooms/${roomId}`).set({
+          p1: { uid: opp.uid, name: opp.name, cc: opp.cc, av: opp.av },
+          p2: { uid: UID, name: S.name, cc: S.cc, av: S.av },
+          status: "playing",
+          turn: 1,
+          board: INIT_BOARD,
+          cap: [0, 0],
+          clock: [300, 300],
+          at: now,
+          n: 0,
+          settled: false
+        });
+        await R(`queue/${opp.uid}`).remove().catch(() => {});
+        await R(`queue/${UID}`).remove().catch(() => {});
+        await R(`users/${opp.uid}/joinRoom`).set(roomId).catch(() => {});
+        await R(`users/${UID}/joinRoom`).set(roomId).catch(() => {});
+      };
+      qRef.on("value", qFn);
+      NET.qOff = { ref: qRef, fn: qFn };
+
+      NET.iv = setInterval(() => {
+        if (Date.now() - t0 > 12000 && $("#mod").style.display === "flex") renderQ(true);
+      }, 1000);
+    };
+
+    NET.open = async (id) => {
+      clearInterval(NET.iv);
+      NET.iv = null;
+      if (NET.qOff) { try { NET.qOff.ref.off("value", NET.qOff.fn); } catch (_) {} NET.qOff = null; }
+      closeM();
+      const rr = R(`rooms/${id}`);
+      const rm = (await rr.once("value")).val();
+      if (!rm) return;
+      const me = rm.p1.uid === UID ? 1 : 2;
+      const opp = me === 1 ? rm.p2 : rm.p1;
+      newGame({ mode: "rm", me, room: id, opp: { name: opp.name, cc: opp.cc, av: opp.av, elo: 1200, uid: opp.uid } });
+      const g = G;
+      NET.sync(g, rm);
+      on(rr, "value", (s) => { const v = s.val(); if (v && G === g) NET.sync(g, v); });
+      on(rr.child("chat"), "child_added", (s) => {
+        const m = s.val();
+        const c = $("#cm");
+        if (m && c) {
+          c.innerHTML += `<div><b class="gold-txt">${esc(m.u)}:</b> ${esc(m.x)}</div>`;
+          c.scrollTop = 1e5;
+        }
+      });
+    };
+
+    NET.sync = (g, v) => {
+      if (!v || !v.board) return;
+      g.b = v.board.split("").map(Number);
+      g.t = v.turn;
+      g.last = v.last || null;
+      g.cap = v.cap || [0, 0];
+      const el = (Date.now() + (NET.off || 0) - (v.at || Date.now())) / 1000;
+      const clk = v.clock || [300, 300];
+      g.tm = [Math.round(clk[0]), Math.round(clk[1])];
+      g.tm[g.turn - 1] = Math.max(0, Math.round(g.tm[g.turn - 1] - el));
+      g.mv = moves(g.b, g.t);
+      g.sel = null;
+      g.busy = 0;
+      rb($("#bd"), g);
+      hud();
+      if (v.status === "done" && !g.over) {
+        const outcome = v.winner ? (v.winner === UID ? "w" : "l") : "d";
+        if (!g.settled) {
+          g.settled = 1;
+          if (outcome === "w") addCoins(40);
+          else if (outcome === "d") addCoins(20);
+        }
+        setTimeout(() => { if (G === g) end(outcome); }, 450);
+      }
+    };
+
+    NET.mv = async (g, m) => {
+      g.busy = 1;
+      g.sel = null;
+      const nb = ap(g.b, m);
+      const nextTurn = 3 - g.t;
+      const cap = [...(g.cap || [0, 0])];
+      cap[g.t - 1] += m.c.length;
+      const nextN = (g.n || 0) + 1;
+      const noMoves = !moves(nb, nextTurn).length;
+      const isDraw = !noMoves && nextN > 150;
+      const winnerUid = noMoves ? UID : null;
+      await R(`rooms/${g.room}`).update({
+        board: nb.join(""),
+        turn: nextTurn,
+        last: [m.p[0], m.p[m.p.length - 1]],
+        cap,
+        n: nextN,
+        at: Date.now(),
+        status: (noMoves || isDraw) ? "done" : "playing",
+        winner: (noMoves || isDraw) ? winnerUid : null
+      }).catch((e) => {
+        toast((e && e.message) || "Move error");
+        g.busy = 0;
+        rb($("#bd"), g);
+      });
+    };
+
+    NET.finishRoom = async (g, winnerSide, why) => {
+      if (!g || !g.room || g.over) return;
+      const rm = (await R(`rooms/${g.room}`).once("value")).val();
+      if (!rm || rm.status === "done") return;
+      const winnerUid = winnerSide === 1 ? rm.p1.uid : (winnerSide === 2 ? rm.p2.uid : null);
+      await R(`rooms/${g.room}`).update({ status: "done", winner: winnerUid, why }).catch(() => {});
+    };
+
+    NET.to = (g) => {
+      if (g.tof) return;
+      g.tof = 1;
+      NET.finishRoom(g, 3 - g.me, "timeout");
+      setTimeout(() => { g.tof = 0; }, 3000);
+    };
+
+    NET.chat = (x) => {
+      if (!G || !G.room) return;
+      R(`rooms/${G.room}/chat`).push({ u: S.name, cc: S.cc, x, t: SSV() }).catch(() => toast("Chat failed"));
+    };
+
+    ROYAL_AUDIO.init();
+    META_ADS.initTestConfig();
+    go(S.name ? "home" : "splash");
+    if (S.name) NET.login();
+    if ("serviceWorker" in navigator) {
+      addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+{
+ "packageId": "com.damaroyale3d.app",
+ "host": "dama-royale-3d-f8b49.web.app",
+ "name": "DAMA ROYALE 3D",
+ "launcherName": "DAMA ROYALE",
+ "display": "standalone",
+ "orientation": "portrait",
+ "themeColor": "#0A1428",
+ "themeColorDark": "#0A1428",
+ "navigationColor": "#0A1428",
+ "navigationColorDark": "#0A1428",
+ "navigationDividerColor": "#0A1428",
+ "navigationDividerColorDark": "#0A1428",
+ "backgroundColor": "#0A1428",
+ "startUrl": "/",
+ "iconUrl": "https://dama-royale-3d-f8b49.web.app/icons/icon-512.png",
+ "maskableIconUrl": "https://dama-royale-3d-f8b49.web.app/icons/icon-maskable-512.png",
+ "webManifestUrl": "https://dama-royale-3d-f8b49.web.app/manifest.webmanifest",
+ "fullScopeUrl": "https://dama-royale-3d-f8b49.web.app/",
+ "appVersion": "1.0.0",
+ "appVersionCode": 1,
+ "minSdkVersion": 21,
+ "enableNotifications": false,
+ "fallbackType": "customtabs",
+ "features": {
+  "playBilling": {
+   "enabled": true
+  }
+ },
+ "alphaDependencies": {
+  "enabled": true
+ },
+ "enableSiteSettingsShortcut": true,
+ "isChromeOSOnly": false,
+ "isMetaQuest": false,
+ "splashScreenFadeOutDuration": 300,
+ "signingKey": {
+  "path": "./android.keystore",
+  "alias": "damaroyale3d"
+ },
+ "shortcuts": [],
+ "retainedBundles": [],
+ "generatorApp": "bubblewrap-cli"
+}

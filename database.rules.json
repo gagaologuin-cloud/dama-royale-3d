@@ -1,0 +1,69 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "users": {
+      ".read": "auth != null",
+      ".indexOn": ["online", "points"],
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid",
+        "name": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 14" },
+        "cc": { ".validate": "newData.isString() && newData.val().length == 2" },
+        "av": { ".validate": "newData.isString() && newData.val().length <= 4" },
+        "coins": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000" },
+        "practiceCoins": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000000" },
+        "wins": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "aiw": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "points": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+        "elo": { ".validate": "newData.isNumber() && newData.val() >= 800 && newData.val() <= 5000" },
+        "online": { ".validate": "newData.isBoolean()" },
+        "lastSeen": {},
+        "joinRoom": {
+          ".write": "auth != null"
+        },
+        "eq": {
+          "$k": {
+            ".validate": "newData.isString() && (newData.val().length === 0 || root.child('users/' + $uid + '/own/' + newData.val()).exists())"
+          }
+        }
+      }
+    },
+    "queue": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null"
+      }
+    },
+    "rooms": {
+      ".read": "auth != null",
+      ".indexOn": ["status"],
+      "$r": {
+        ".write": "auth != null",
+        "chat": {
+          "$c": {
+            ".write": "auth != null && !data.exists()",
+            ".validate": "newData.hasChildren(['u', 'x', 't']) && newData.child('x').isString() && newData.child('x').val().length >= 1 && newData.child('x').val().length <= 100 && newData.child('u').isString()"
+          }
+        }
+      }
+    },
+    "rtc": {
+      "$r": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "marketplace": {
+      ".read": "auth != null",
+      "$offerId": {
+        ".write": "auth != null"
+      }
+    },
+    "earnings": {
+      "$u": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    }
+  }
+}
