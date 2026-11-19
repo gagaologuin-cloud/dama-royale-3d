@@ -1,22 +1,30 @@
-name: Build Dama Royale APK 
-on: 
-  push: 
-    branches: [ "main" ] 
-  workflow_dispatch: 
-jobs: 
-  build: 
-    runs-on: ubuntu-latest 
-    steps: 
-      - uses: actions/checkout@v4 
-      - uses: actions/setup-java@v4 
-        with: 
-          distribution: temurin 
-          java-version: 17 
-      - uses: android-actions/setup-android@v3 
-      - run: chmod +x android/gradlew 
-      - working-directory: android 
-        run: ./gradlew assembleDebug 
-      - uses: actions/upload-artifact@v4 
-        with: 
-          name: dama-royale-3d-debug-apk 
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+cd /d C:\dama-royale-3d && mkdir .github\workflows 2>nul & (
+echo name: Build Dama Royale APK
+echo on:
+echo   push:
+echo     branches: [ "main" ]
+echo   workflow_dispatch:
+echo jobs:
+echo   build:
+echo     runs-on: ubuntu-latest
+echo     steps:
+echo       - name: Checkout code
+echo         uses: actions/checkout@v4
+echo       - name: Set up JDK 17
+echo         uses: actions/setup-java@v4
+echo         with:
+echo           distribution: temurin
+echo           java-version: 17
+echo       - name: Setup Android SDK
+echo         uses: android-actions/setup-android@v3
+echo       - name: Grant gradlew permission
+echo         run: chmod +x android/gradlew
+echo       - name: Build Debug APK
+echo         working-directory: android
+echo         run: ./gradlew assembleDebug
+echo       - name: Upload APK Artifact
+echo         uses: actions/upload-artifact@v4
+echo         with:
+echo           name: dama-royale-3d-debug-apk
+echo           path: android/app/build/outputs/apk/debug/app-debug.apk
+) > .github\workflows\build-apk.yml && dir /s /b android .github
